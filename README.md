@@ -2,9 +2,9 @@
 
 Para inciar se debe:
 ```bash
-$ npm install
+npm install
 ```
 Para iniciar en modo dev
 ```bash
-$ npm run dev
+npm run dev
 ```
