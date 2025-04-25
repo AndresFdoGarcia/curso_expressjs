@@ -15,9 +15,8 @@ const validateSearchParams = (req, res, next) => {
         });
     }
 
-
     // Si todo está bien, continuar con el siguiente middleware o controlador
     next();
 };
 
-module.exports = validateSearchParams;
+export default validateSearchParams;

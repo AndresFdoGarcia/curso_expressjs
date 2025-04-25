@@ -1,12 +1,14 @@
-require('dotenv').config();
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const bodyParser = require('body-parser');
-const userRoutes = require('./routes/user.routes');
+import 'dotenv/config';
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import bodyParser from 'body-parser';
+import userRoutes from './routes/user.routes.js';
 
-//
-const userFilePath = path.join(__dirname, 'data', 'users.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const userFilePath = join(__dirname, 'data', 'users.json');
 
 // Initialize express app
 const app = express();
@@ -16,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Rutas
 app.use('/', userRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
