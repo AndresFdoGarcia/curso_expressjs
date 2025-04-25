@@ -1,7 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/user.routes');
+
+//
+const userFilePath = path.join(__dirname, 'data', 'users.json');
 
 // Initialize express app
 const app = express();
@@ -9,7 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Rutas
-app.use('/api/users', userRoutes);
+app.use('/', userRoutes);
 
 const PORT = process.env.PORT || 3000;
 
