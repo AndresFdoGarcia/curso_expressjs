@@ -7,6 +7,7 @@ import userRoutes from './routes/user.routes.js';
 import { loggerMiddleware } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
 app.use(errorHandler);
+
 
 // Rutas
 app.use('/', userRoutes);

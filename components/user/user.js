@@ -1,7 +1,9 @@
 import { fstat, readFile,writeFile } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { randomUUID } from 'crypto';
+import prisma  from '../../lib/prisma.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -83,10 +85,7 @@ export const createUser = (req, res) => {
         return res.status(500).json({ error: 'Error reading user data' });
       }
       const users = JSON.parse(data);
-      const newUser = {
-        id: randomUUID(),
-        ..._user
-      };
+      
       users.push(newUser);
       const jsonData = JSON.stringify(users, null, 2);
       writeFile(userFilePath, jsonData, (err) => {
@@ -162,8 +161,61 @@ export const deleteUser = (req, res) => {
   });
 }
 
+export const dbUsers = async (req, res) => {
+  try{
+    const users = await prisma.usuario.findMany();
+    res.status(200).json(users);
+  }
+  catch (error) {
+    console.error('Error fetching users from database:', error);
+    res.status(500).json({ error: 'Error fetching users from database' });
+  }
+}
+
+export const dbRegister = async (req, res) => {
+  const user = req.body;
+  validateUser(user);
+  const hashedPassword = await bcrypt.hash(user.password, 10);
+  const newUser = {
+    ...user,
+    password: hashedPassword
+  };
+  try {
+    await prisma.usuario.create({
+      data: newUser
+    });
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error('Error creating user in database:', error);
+    res.status(500).json({ error: 'Error creating user in database' });
+  }
+}
+
+export const dbLogin = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await prisma.usuario.findUnique({
+      where: { email }
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    // Generate JWT token here
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+    res.status(200).json({ message: 'Login successful', token: token });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Error during login' });
+  }
+}
+
+
 const validateUser = (user) => {
-  const { name, email } = user;
+  const { name, email,role, password } = user;
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  
   
   if (!name || typeof name !== 'string' || name?.length < 3) {
@@ -173,7 +225,14 @@ const validateUser = (user) => {
 
   if (!email || !regex.test(email)) {
     console.log('Invalid user data:', user);
-    throw new Error('Invalid email format');    
+    //throw new Error('Invalid email format');    
+  }
+
+  if(!typeof role === "integer" || role < 0 || role > 2) {
+    console.log('Invalid user data:', user);    
+  }
+  if (!password || password.length < 6) {
+    console.log('Invalid user data:', user);    
   }
   
   return true;

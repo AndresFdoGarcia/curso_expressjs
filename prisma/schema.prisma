@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"  
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id     String  @id(map: "PK__Usuario__3213E83F4B447F4B") @default(uuid()) @db.VarChar(36)
+  name String @db.VarChar(100)
+  email  String @db.VarChar(100) @unique
+  password String @db.VarChar(100)
+  createdAt DateTime? @db.DateTime @default(now())
+  role      Int      @db.TinyInt
+
+  @@map("Usuario")
+}
