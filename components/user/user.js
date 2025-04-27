@@ -1,6 +1,8 @@
-import { readFile } from 'fs';
+import { fstat, readFile,writeFile } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { randomUUID } from 'crypto';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,6 +13,23 @@ export const getUser = (req, res) => {
     // Simulate fetching user from a database
     const user = { id: userId, name: 'John Doe' };
     res.status(200).json(user);
+}
+
+export const getUserByEmail = (req, res) => {
+    const userEmail = req.query.email;
+    readFile(userFilePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error('Error reading file:', err);
+        return res.status(500).json({ error: 'Error reading user data' });
+      }
+      const users = JSON.parse(data);
+      const user = users.find(user => user.email === userEmail);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.status(200).json(user);
+    }
+    );
 }
   
 export const serchQueryParamsUser = (req, res) => {
@@ -50,5 +69,112 @@ export const readUserFile = (req,res) => {
         console.error('Error parsing JSON:', parseError);
         res.status(500).json({ error: 'Error parsing user data' });
       }
+    }); 
+}
+
+export const createUser = (req, res) => {
+  const _user = req.body;
+  
+  try {
+    validateUser(_user);
+    readFile(userFilePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error('Error reading file:', err);
+        return res.status(500).json({ error: 'Error reading user data' });
+      }
+      const users = JSON.parse(data);
+      const newUser = {
+        id: randomUUID(),
+        ..._user
+      };
+      users.push(newUser);
+      const jsonData = JSON.stringify(users, null, 2);
+      writeFile(userFilePath, jsonData, (err) => {
+        if (err) {
+          console.error('Error writing file:', err);
+          return res.status(500).json({ error: 'Error saving user data' });
+        }
+        console.log('User data saved successfully');
+        res.status(201).json(newUser);
+      });
+    });    
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export const updateUser = (req, res) => {
+  const userId = req.params.id;
+  const updatedUser = req.body;
+  
+  readFile(userFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading file:', err);
+      return res.status(500).json({ error: 'Error reading user data' });
+    }
+    const users = JSON.parse(data);
+    const userIndex = users.findIndex(user => user.id === userId);
+    
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    users[userIndex] = { ...users[userIndex], ...updatedUser };
+    
+    const jsonData = JSON.stringify(users, null, 2);
+    writeFile(userFilePath, jsonData, (err) => {
+      if (err) {
+        console.error('Error writing file:', err);
+        return res.status(500).json({ error: 'Error saving user data' });
+      }
+      console.log('User data updated successfully');
+      res.status(200).json(users[userIndex]);
     });
+  });
+}
+
+export const deleteUser = (req, res) => {
+  const userId = req.params.id;
+  
+  readFile(userFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading file:', err);
+      return res.status(500).json({ error: 'Error reading user data' });
+    }
+    const users = JSON.parse(data);
+    const userIndex = users.findIndex(user => user.id === userId);
+    
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    users.splice(userIndex, 1);
+    
+    const jsonData = JSON.stringify(users, null, 2);
+    writeFile(userFilePath, jsonData, (err) => {
+      if (err) {
+        console.error('Error writing file:', err);
+        return res.status(500).json({ error: 'Error saving user data' });
+      }
+      console.log('User data deleted successfully');
+      res.status(200).json({ message: 'User deleted successfully' });
+    });
+  });
+}
+
+const validateUser = (user) => {
+  const { name, email } = user;
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  
+  
+  if (!name || typeof name !== 'string' || name?.length < 3) {
+    console.log('Invalid user data:', user);
+    throw new Error('Name must be a string with at least 3 characters');    
+  }
+
+  if (!email || !regex.test(email)) {
+    console.log('Invalid user data:', user);
+    throw new Error('Invalid email format');    
+  }
+  
+  return true;
 }

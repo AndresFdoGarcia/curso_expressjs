@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import bodyParser from 'body-parser';
 import userRoutes from './routes/user.routes.js';
+import { loggerMiddleware } from './middlewares/logger.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,6 +16,8 @@ const userFilePath = join(__dirname, 'data', 'users.json');
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(loggerMiddleware);
+app.use(errorHandler);
 
 // Rutas
 app.use('/', userRoutes);
