@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import userRoutes from './routes/user.routes.js';
 import { loggerMiddleware } from './middlewares/logger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { setupSwagger } from './config/swagger.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
 app.use(errorHandler);
 
+// Setup Swagger
+setupSwagger(app);
 
 // Rutas
 app.use('/', userRoutes);

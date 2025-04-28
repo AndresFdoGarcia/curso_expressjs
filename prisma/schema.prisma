@@ -14,6 +14,27 @@ model Usuario {
   password String @db.VarChar(100)
   createdAt DateTime? @db.DateTime @default(now())
   role      Int      @db.TinyInt
+  appointments Appointment[]  
 
   @@map("Usuario")
+}
+
+model Appointment {
+  id     String  @id(map: "PK__Appointment__3213E83F4B447F4B") @default(uuid()) @db.VarChar(36)
+  date   DateTime? @db.DateTime
+  time   String?  @db.VarChar(10)  
+  userId String @db.VarChar(36)
+  user   Usuario @relation(fields: [userId], references: [id])  
+  timeBlockId String @db.VarChar(36)
+  timeBlock TimeBlock @relation(fields: [timeBlockId], references: [id])
+  @@map("Appointment")
+}
+
+model TimeBlock {
+  id     String  @id(map: "PK__timeBlock__3213E83F4B447F4B") @default(uuid()) @db.VarChar(36)
+  start  String?  @db.VarChar(10)
+  end    String?  @db.VarChar(10)  
+  appointments Appointment[]
+
+  @@map("TimeBlock")
 }
