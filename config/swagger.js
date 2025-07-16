@@ -15,6 +15,13 @@ const options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      },
       schemas: {
         User: {
           type: 'object',
@@ -25,6 +32,8 @@ const options = {
         },
       },
     },
+    // (Opcional) Aplica seguridad global a todas las rutas:
+    // security: [{ bearerAuth: [] }]
   },
   apis: ['./routes/*.js'],
 };

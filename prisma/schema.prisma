@@ -21,8 +21,7 @@ model Usuario {
 
 model Appointment {
   id     String  @id(map: "PK__Appointment__3213E83F4B447F4B") @default(uuid()) @db.VarChar(36)
-  date   DateTime? @db.DateTime
-  time   String?  @db.VarChar(10)  
+  date   DateTime @db.DateTime  
   userId String @db.VarChar(36)
   user   Usuario @relation(fields: [userId], references: [id])  
   timeBlockId String @db.VarChar(36)
@@ -32,8 +31,8 @@ model Appointment {
 
 model TimeBlock {
   id     String  @id(map: "PK__timeBlock__3213E83F4B447F4B") @default(uuid()) @db.VarChar(36)
-  start  String?  @db.VarChar(10)
-  end    String?  @db.VarChar(10)  
+  start  DateTime
+  end    DateTime  
   appointments Appointment[]
 
   @@map("TimeBlock")

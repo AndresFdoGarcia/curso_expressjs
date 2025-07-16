@@ -1,5 +1,7 @@
 import express from 'express';
 import { getUser, serchQueryParamsUser, validateForm, readUserFile,createUser, updateUser, deleteUser,getUserByEmail, dbUsers, dbRegister, dbLogin } from '../components/user/user.js';
+import { createAppointment, listReservations } from '../components/Appointments/appointment.js';
+import { creatTimeBlock, listTimeBlocks } from '../components/TimeBlock/timeblock.js';
 import validateSearchParams from '../middlewares/validateSearch.js';
 import { authenticateToken } from '../middlewares/auth.js';
 
@@ -270,5 +272,108 @@ router.post('/api/users/register', dbRegister);
  *         description: Usuario no encontrado
  */
 router.post('/api/login', dbLogin);
+
+
+/**
+ * @swagger
+ * /api/timeblock:
+ *   get:
+ *     summary: Listar todos los bloques de tiempo
+ *     security: 
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de bloques de tiempo
+ */
+
+router.get('/api/timeblock', authenticateToken, listTimeBlocks);
+
+/**
+ * @swagger
+ * /api/timeblock:
+ *   post:
+ *     summary: Crear un nuevo bloque de tiempo
+ *     security: 
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               start:
+ *                 type: string
+ *                 format: date-time
+ *               end:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Bloque de tiempo creado
+ */
+router.post('/api/timeblock', authenticateToken , creatTimeBlock);
+
+
+/**
+ * @swagger
+ * /api/appointments:
+ *   post:
+ *     summary: Crear una nueva cita
+ *     security: 
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               timeBlockId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Cita creada
+ */
+router.post('/api/appointments',authenticateToken, createAppointment);
+
+/**
+ * @swagger
+ * /api/appointments:
+ *   get:
+ *     summary: Listar todas las citas
+ *     security: 
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de citas
+ */
+router.get('/api/appointments', authenticateToken, listReservations);
+/**
+ * @swagger
+ * /api/appointments/{id}:
+ *   get:
+ *     summary: Obtener una cita por ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la cita
+ *     responses:
+ *       200:
+ *         description: Cita encontrada
+ *       404:
+ *         description: Cita no encontrada
+ */
+router.get('/api/appointments/:id', (req, res) => {
+    const { id } = req.params;
+    // Aquí puedes implementar la lógica para obtener una cita por ID
+    res.status(200).json({ message: `Cita con ID ${id} encontrada` });
+}
+);
 
 export default router;
